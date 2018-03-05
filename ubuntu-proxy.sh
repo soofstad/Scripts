@@ -2,7 +2,7 @@
 HTTP_PROXY_HOST=www-proxy.statoil.no
 HTTP_PROXY_PORT=80
 HTTPS_PROXY_HOST=proxy.example.com
-HTTPS_PROXY_PORT=3128
+HTTPS_PROXY_PORT=80
 
 
 http_proxy="http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT/"
@@ -21,6 +21,7 @@ sudo sed -i.bak '/http[s]::proxy/Id' /etc/apt/apt.conf
 sudo tee -a /etc/apt/apt.conf <<EOF
 Acquire::http::proxy "http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT/";
 Acquire::https::proxy "http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT/";
+
 EOF
 
 sudo sed -i.bak '/http[s]_proxy/Id' /etc/environment
