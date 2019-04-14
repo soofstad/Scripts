@@ -6,4 +6,7 @@
 
 # xdotool windowactivate $"WIN_ID" key --clearmodifiers ctrl+p
 # xdotool  windowactivate $"CURRENT_WIN"s
+WIN_ID=$(xdotool search --name " - MusicBee")
+xdotool windowfocus $WIN_ID
+xdotool windowactivate $WIN_ID
 xdotool search --name " - MusicBee" key --clearmodifiers ctrl+p
