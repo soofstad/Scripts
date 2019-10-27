@@ -1,16 +1,22 @@
 #! /bin/bash
 START=$(date +%s)
 EXTRACTED_IMAGES=0
+START_FOLDER="."
 
-while getopts "h?v:" opt; do
+while getopts "h?vf::" opt; do
     case "$opt" in
-    h|\?)
-        echo "Will run in standing directory"
-        echo "-v: Verbose mode"
-        exit 0
-        ;;
-    v)  verbose=1
-        ;;
+        h|\?)
+            echo "Will run in standing directory"
+            echo "-v: Verbose mode"
+            echo "-f: Folder to execute on. Default '.'"
+            exit 0
+            ;;
+        v)
+            verbose=1
+            ;;
+        f)
+            echo "Executing on $OPTARG"
+            START_FOLDER=$OPTARG
     esac
 done
 
@@ -57,7 +63,7 @@ CYAN='\033[1;36m'
 GREEN='\033[1;32m'
 RED='\033[1;31m'
 NO_COLOR='\033[0m'
-for folder in $(find . -mindepth 1 -type d); do
+for folder in $(find $START_FOLDER -mindepth 1 -type d); do
     extract_coverart_recursively $folder
 done;
 
