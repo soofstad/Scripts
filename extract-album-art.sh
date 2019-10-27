@@ -1,24 +1,49 @@
 #! /bin/bash
 START=$(date +%s)
 EXTRACTED_IMAGES=0
+
+while getopts "h?v:" opt; do
+    case "$opt" in
+    h|\?)
+        echo "Will run in standing directory"
+        echo "-v: Verbose mode"
+        exit 0
+        ;;
+    v)  verbose=1
+        ;;
+    esac
+done
+
+function log () {
+    if [[ $verbose -eq 1 ]]; then
+        printf "$@"
+    fi
+}
+
+# Cheking for dependencies
+hash ffmpeg || { echo "Error: ffmpeg not found in PATH. Exiting...";  exit 1; }
+hash metaflac || { echo "Error: metaflac not found in PATH. Exiting...";  exit 1; }
+
 function extract_coverart_recursively {
     FOLDER=$1
     SUBFOLDERS=$(find $FOLDER -mindepth 1 -type d)
     if [ -z "$SUBFOLDERS" ]; then
-        echo " $FOLDER has no subfolders. Assuming album folder. "
+        log " $FOLDER has no subfolders. Assuming album folder. "
         if [ ! -f $FOLDER/cover.jpg ]; then
-            FIRST_MP_FILE=$(ls -1 "$FOLDER"/*.mp* | head -1)
-            if [ ! -z "$FIRST_MP_FILE" ]; then
-                printf "${CYAN} Extracting from $FIRST_MP_FILE....${NO_COLOR}\n"
-                ffmpeg -hide_banner -loglevel error -i "$FIRST_MP_FILE" "$FOLDER/cover.jpg" && EXTRACTED_IMAGES=$(($EXTRACTED_IMAGES+1))
+            FIRST_MP3_FILE=$(ls -1 "$FOLDER"/*.mp* 2>/dev/null | head -1)
+            FIRST_FLAC_FILE=$(ls -1 "$FOLDER"/*.flac* 2>/dev/null | head -1)
+            if [ ! -z "$FIRST_MP3_FILE" ]; then
+                printf "${CYAN} Extracting from $FIRST_MP3_FILE....${NO_COLOR}\n"
+                ffmpeg -hide_banner -loglevel error -i "$FIRST_MP3_FILE" "$FOLDER/cover.jpg" && EXTRACTED_IMAGES=$(($EXTRACTED_IMAGES+1))
+            elif [ ! -z "$FIRST_FLAC_FILE" ]; then
+                printf "${CYAN} Extracting from $FIRST_FLAC_FILE....${NO_COLOR}\n"
+                metaflac --export-picture-to="$FOLDER/cover.jpg" "$FIRST_FLAC_FILE" && EXTRACTED_IMAGES=$(($EXTRACTED_IMAGES+1))
             else
-                printf "${RED}Could not find a file mathing '*.mp*'. Nothing more I can do right now...${NO_COLOR}\n"
+                log "${RED}Could not find a file mathing '*.mp*' or *.flac*.${NO_COLOR}\n"
             fi
         else
-            printf "${GREEN}$FOLDER already has a 'cover.jpg' file${NO_COLOR}\n"
+            log "${GREEN}$FOLDER already has a 'cover.jpg' file${NO_COLOR}\n"
         fi
-        echo "#############################"
-
     else
         for i in $SUBFOLDERS; do
             extract_coverart_recursively $i
